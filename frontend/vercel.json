@@ -1,0 +1,7 @@
+{
+    "rewrites": [
+      { "source": "/admin/companies/create", "destination": "/" },
+      { "source": "/:path*", "destination": "/" }
+    ]
+  }
+  
