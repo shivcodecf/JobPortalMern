@@ -23,7 +23,7 @@ app.use(cookieParser());
 
 
 const corsOptions = {
-    origin: "http://localhost:5174", // Correct URL
+    origin: "https://job-portal-mern-fro5.vercel.app", // Correct URL
     credentials: true,
 };
 
