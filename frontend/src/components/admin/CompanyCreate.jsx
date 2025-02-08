@@ -16,6 +16,7 @@ const CompanyCreate = () => {
   const dispatch = useDispatch();
 
   const registerNewCompany = async () => {
+    const token = localStorage.getItem("authToken");  // ✅ Token Fetch Karo
     try {
       const res = await axios.post(
         `${COMPANY_API_END_POINT}/register`,
@@ -24,6 +25,7 @@ const CompanyCreate = () => {
           headers: {
             
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,  // ✅ Token Add Karo
            
           },
           withCredentials: true,

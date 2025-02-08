@@ -47,6 +47,7 @@ const Login = () => {
             });
 
             if (res.data.success) {
+                localStorage.setItem("authToken", res.data.token);  // ✅ Token Store Karo
                 dispatch(setUser(res.data.user));
                 navigate("/");
                 toast.success(res.data.message);
