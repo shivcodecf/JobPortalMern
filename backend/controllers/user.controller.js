@@ -54,30 +54,40 @@ export const login = async (req, res) => {
     try {
         const { email, password, role } = req.body;
 
+        console.log("Login Request Received:", email, role); // ✅ Debugging Log
+
         if (!email || !password || !role) {
             return res.status(400).json({ message: "All fields are required", success: false });
         }
 
+        // Find user in DB
         const user = await User.findOne({ email });
+        console.log("User Found:", user); // ✅ Debugging Log
+
         if (!user || role !== user.role) {
             return res.status(400).json({ message: "Invalid credentials", success: false });
         }
 
+        // Check Password
         const isPasswordMatch = await bcrypt.compare(password, user.password);
+        console.log("Password Match:", isPasswordMatch); // ✅ Debugging Log
+
         if (!isPasswordMatch) {
             return res.status(400).json({ message: "Invalid credentials", success: false });
         }
 
+        // Generate JWT Token
         const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, { expiresIn: "1d" });
+        console.log("Generated Token:", token); // ✅ Debugging Log
 
+        // Set HTTP-Only Cookie (✅ `domain` Removed)
         return res.status(200)
             .cookie("token", token, {
-                maxAge: 24 * 60 * 60 * 1000, // 1 day expiry
-                httpOnly: true, // Prevent client-side access
-                sameSite: "none", // Allow cross-site cookies
-                secure: process.env.NODE_ENV === "production", // HTTPS only in production
-                domain: "https://job-portal-mern-fro5.vercel.app/", // Replace with your domain
-                path: "/", // Accessible across all paths
+                maxAge: 24 * 60 * 60 * 1000,  // ✅ 1 day expiry
+                httpOnly: true,               // ✅ JavaScript cannot access (More Secure)
+                sameSite: "none",             // ✅ Cross-site requests ke liye required
+                secure: process.env.NODE_ENV === "production",  // ✅ Only allow in HTTPS
+                path: "/"                      // ✅ Accessible across all paths
             })
             .json({
                 message: `Welcome back ${user.fullname}`,
@@ -89,11 +99,14 @@ export const login = async (req, res) => {
                 },
                 success: true,
             });
+
     } catch (error) {
-        console.error("Login Error:", error.message);
-        return res.status(500).json({ message: "Internal server error", success: false });
+        console.error("Login Error:", error);
+        return res.status(500).json({ message: "Internal server error", success: false, error: error.message });
     }
 };
+
+
 export const logout = async (req, res) => {
     try {
         return res.status(200).cookie("token", "", { maxAge: 0 }).json({
