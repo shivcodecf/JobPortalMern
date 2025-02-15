@@ -27,13 +27,26 @@ const isAuthenticated = async (req, res, next) => {
 
         // Proceed to the next middleware or route handler
         next();
+
     } catch (error) {
         console.error("Authentication error:", error.message);
 
-        return res.status(500).json({
-            message: "Internal server error",
-            success: false,
-        });
+        if (error.name === "TokenExpiredError") {
+            return res.status(401).json({
+                message: "Token expired",
+                success: false,
+            });
+        } else if (error.name === "JsonWebTokenError") {
+            return res.status(401).json({
+                message: "Invalid token",
+                success: false,
+            });
+        } else {
+            return res.status(500).json({
+                message: "Internal server error",
+                success: false,
+            });
+        }
     }
 };
 

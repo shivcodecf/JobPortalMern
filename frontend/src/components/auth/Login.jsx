@@ -22,8 +22,7 @@ const Login = () => {
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
-
-    const { loading, user } = useSelector(store => store.auth);
+    const { loading } = useSelector(store => store.auth);
 
     const changeEventHandler = (e) => {
         setInput({ ...input, [e.target.name]: e.target.value });
@@ -31,31 +30,40 @@ const Login = () => {
 
     const submitHandler = async (e) => {
         e.preventDefault();
-        const formData = new FormData();
-        formData.append("email", input.email);
-        formData.append("password", input.password);
-        formData.append("role", input.role);
+
+        if (!input.email || !input.password) {
+            toast.error("Please fill in all fields");
+            return;
+        }
+
+        if (!input.role) {
+            toast.error("Please select a role");
+            return;
+        }
 
         try {
             dispatch(setLoading(true));
 
-            const res = await axios.post(`${USER_API_END_POINT}/login`, formData, {
+            const res = await axios.post(`${USER_API_END_POINT}/login`, input, {
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
                 },
                 withCredentials: true,
             });
 
             if (res.data.success) {
-                localStorage.setItem("authToken", res.data.token);  // ✅ Token Store Karo
+                localStorage.setItem("authToken", res.data.token);
                 dispatch(setUser(res.data.user));
                 navigate("/");
                 toast.success(res.data.message);
             }
-
         } catch (error) {
             console.log(error);
-            toast.error("An error occurred during login");
+            if (error.response && error.response.data && error.response.data.message) {
+                toast.error(error.response.data.message);
+            } else {
+                toast.error("An error occurred during login");
+            }
         } finally {
             dispatch(setLoading(false));
         }
@@ -97,9 +105,8 @@ const Login = () => {
                     <div className="my-6">
                         <RadioGroup className="flex flex-col sm:flex-row items-center gap-4">
                             <div className="flex items-center space-x-2">
-                                <Input
-                                    type="radio"
-                                    name="role"
+                                <RadioGroupItem
+                                    id="r1"
                                     value="student"
                                     checked={input.role === 'student'}
                                     onChange={changeEventHandler}
@@ -108,12 +115,11 @@ const Login = () => {
                                 <Label htmlFor="r1">Student</Label>
                             </div>
                             <div className="flex items-center space-x-2">
-                                <Input
-                                    type="radio"
-                                    name="role"
+                                <RadioGroupItem
+                                    id="r2"
+                                    value="recruiter"
                                     checked={input.role === 'recruiter'}
                                     onChange={changeEventHandler}
-                                    value="recruiter"
                                     className="cursor-pointer"
                                 />
                                 <Label htmlFor="r2">Recruiter</Label>
@@ -122,9 +128,16 @@ const Login = () => {
                     </div>
 
                     {
-                        loading ? 
-                        <Button className="w-full my-4"><Loader2 className="mr-2 h-4 w-4 animate-spin" />Please Wait</Button> :
-                        <Button type="submit" className="w-full my-4">Login</Button>
+                        loading ? (
+                            <Button className="w-full my-4" disabled>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Please Wait
+                            </Button>
+                        ) : (
+                            <Button type="submit" className="w-full my-4">
+                                Login
+                            </Button>
+                        )
                     }
 
                     <span className="text-sm block text-center">Don't have an account? <Link to="/signup" className="text-blue-600">Signup</Link></span>
