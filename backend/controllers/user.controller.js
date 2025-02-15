@@ -72,10 +72,12 @@ export const login = async (req, res) => {
 
         return res.status(200)
             .cookie("token", token, {
-                maxAge: 24 * 60 * 60 * 1000,  // 1 day expiry
-                httpOnly: true,  
-                sameSite: "none",   // Important for cross-site cookies (frontend & backend different domains)
-                secure: true,       // Must be true for HTTPS (deployment ke liye)
+                maxAge: 24 * 60 * 60 * 1000, // 1 day expiry
+                httpOnly: true, // Prevent client-side access
+                sameSite: "none", // Allow cross-site cookies
+                secure: process.env.NODE_ENV === "production", // HTTPS only in production
+                domain: "https://job-portal-mern-fro5.vercel.app/", // Replace with your domain
+                path: "/", // Accessible across all paths
             })
             .json({
                 message: `Welcome back ${user.fullname}`,
@@ -92,7 +94,6 @@ export const login = async (req, res) => {
         return res.status(500).json({ message: "Internal server error", success: false });
     }
 };
-
 export const logout = async (req, res) => {
     try {
         return res.status(200).cookie("token", "", { maxAge: 0 }).json({
